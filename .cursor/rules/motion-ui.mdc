@@ -1,0 +1,37 @@
+---
+description: Mobile-first UI, light motion, and micro-interactions (Framer Motion)
+alwaysApply: true
+---
+
+# Context: mobile web app
+
+This project is a **mobile-first web app** (phone-sized viewport, touch, PWA-style shell). Design and motion should feel natural **on a phone first**—not desktop-first with mobile as an afterthought.
+
+## Mobile UI
+
+- **Touch**: Aim for ~44px minimum tap targets; avoid cramming tiny controls. Prefer bottom-aligned actions and patterns that work with thumbs (e.g. sheets from the bottom, fixed bottom nav).
+- **Layout**: Keep the single-column `max-w-md` style; don’t assume wide screens or precise hover.
+- **Affordances**: Don’t rely on hover for essential actions; use visible buttons/links/icons.
+- **Safe area**: Respect `env(safe-area-inset-*)` where fixed UI touches screen edges (nav, sheets, notches).
+- **Scrolling**: Prefer native scroll; avoid trapping scroll in nested areas without a clear reason.
+
+## Motion (keep it light)
+
+When adding or changing UI, include **subtle** motion where it helps (panels, lists, nav, primary actions)—optimized for **touch and small screens**.
+
+- Use **Framer Motion** (`framer-motion`). Prefer `motion as Motion` if ESLint flags lowercase `motion`.
+- **Durations**: ~150–320ms. Ease curves like `[0.25, 0.1, 0.25, 1]` or `easeOut`; avoid long or flashy motion on mobile.
+- **Sheets / overlays**: Bottom sheets and edge slides match mobile expectations; use `AnimatePresence` and mirror enter/exit.
+- **Tap feedback**: `whileTap={{ scale: 0.94–0.98 }}` with a short spring on tappable controls—not hover states.
+- **Tab / main views**: Short opacity + small `y` offset with `AnimatePresence mode="wait"` when swapping content.
+- **Lists**: Minimal stagger; single-item fade/slide is often enough. Use `LayoutGroup` + `layout` sparingly.
+- **Performance**: Prefer animating **transform** and **opacity**; avoid animating `height`/`top`/layout-heavy props when possible on low-end phones.
+- **Accessibility**: Respect **`prefers-reduced-motion`** when adding motion (reduce duration, simplify, or skip non-essential animation).
+
+## Avoid
+
+- Desktop-only patterns (dense tables, tiny click targets, hover-only menus) as the default.
+- Long animations, heavy spring bounce, or animating large areas of the screen.
+- New animation libraries unless necessary.
+
+If a change is purely logic with no visible new component, extra motion is optional.
