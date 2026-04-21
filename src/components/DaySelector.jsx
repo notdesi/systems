@@ -14,7 +14,7 @@ function startOfWeekMonday(date) {
  * Horizontal week strip (Mon–Sun). Controlled by `value` / `onChange`.
  * Pass `missedWorkoutDates` to show the shifted plan under each weekday.
  */
-function DaySelector({ value, onChange, missedWorkoutDates = null }) {
+function DaySelector({ value, onChange, missedWorkoutDates = null, weeklyPlan = null }) {
   const weekStart = startOfWeekMonday(value)
   const weekdayFmt = new Intl.DateTimeFormat('en-US', { weekday: 'short' })
 
@@ -33,7 +33,7 @@ function DaySelector({ value, onChange, missedWorkoutDates = null }) {
       {days.map((day) => {
         const selected = isSameDay(day, value)
         const plan =
-          missedWorkoutDates != null ? getWorkoutForDate(day, missedWorkoutDates) : null
+          missedWorkoutDates != null ? getWorkoutForDate(day, missedWorkoutDates, weeklyPlan ?? undefined) : null
         const strip = plan != null ? getWorkoutStripLabel(plan) : null
 
         return (

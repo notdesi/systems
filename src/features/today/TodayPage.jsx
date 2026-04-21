@@ -31,6 +31,7 @@ function TodayPage() {
 
   const selectedDomain = useAppStore((s) => s.selectedDomain)
   const missedWorkoutDates = useAppStore((s) => s.missedWorkoutDates)
+  const weeklyPlan = useAppStore((s) => s.weeklyPlan)
   const streak = useAppStore((s) => s.streak)
   const quickTimerDefaultSeconds = useAppStore((s) => s.profile.quickTimerSeconds || 150)
   const setStreakState = useAppStore((s) => s.setStreakState)
@@ -41,7 +42,7 @@ function TodayPage() {
     t.setHours(0, 0, 0, 0)
     return t
   }, [])
-  const dayPlan = getWorkoutForDate(todayStart, missedWorkoutDates)
+  const dayPlan = getWorkoutForDate(todayStart, missedWorkoutDates, weeklyPlan)
   const workoutId = dayPlan.kind === 'workout' ? dayPlan.id : null
 
   const [rows, setRows] = useState([])

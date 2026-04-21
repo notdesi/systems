@@ -1,15 +1,23 @@
 /** Monday reference for stable working-day ordinals (UTC-safe local dates). */
 export const ORDINAL_EPOCH_MONDAY = new Date(2000, 0, 3)
 
-/** Mon–Sat repeating template (Sunday is always rest, not in this list). */
-export const WORKOUT_CYCLE = ['push', 'pull', 'cardio', 'legs', 'push', 'pullLegs']
+export const WORKOUT_OPTIONS = ['push', 'pull', 'leg', 'cardio']
+
+export const DEFAULT_WEEKLY_PLAN = {
+  1: ['push'],
+  2: ['pull'],
+  3: ['leg'],
+  4: ['cardio'],
+  5: ['push'],
+  6: ['pull'],
+  0: ['leg'],
+}
 
 export const WORKOUT_LABELS = {
   push: 'Push',
   pull: 'Pull',
   cardio: 'Cardio',
-  legs: 'Legs',
-  pullLegs: 'Pull + Legs',
+  leg: 'Leg',
   rest: 'Rest',
 }
 
@@ -18,8 +26,7 @@ export const WORKOUT_COMPACT = {
   push: 'Push',
   pull: 'Pull',
   cardio: 'Cardio',
-  legs: 'Legs',
-  pullLegs: 'P+L',
+  leg: 'Leg',
 }
 
 /** Strip shows only where training falls after shifts (no “miss” label). */
@@ -46,56 +53,43 @@ export function toISODateLocal(date) {
   return `${y}-${m}-${day}`
 }
 
-export function isSunday(date) {
-  return new Date(date).getDay() === 0
-}
-
-/** Working days Mon–Sat only; Sunday is not a training ordinal. */
-export function workingDayOrdinal(date) {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  if (d.getDay() === 0) return null
-
-  let before = 0
-  const cursor = new Date(ORDINAL_EPOCH_MONDAY)
-  cursor.setHours(0, 0, 0, 0)
-
-  while (cursor < d) {
-    if (cursor.getDay() !== 0) before += 1
-    cursor.setDate(cursor.getDate() + 1)
+export function normalizeWeeklyPlan(plan) {
+  const next = {}
+  for (const weekday of [0, 1, 2, 3, 4, 5, 6]) {
+    const raw = Array.isArray(plan?.[weekday]) ? plan[weekday] : DEFAULT_WEEKLY_PLAN[weekday]
+    const cleaned = [...new Set(raw)].filter((opt) => WORKOUT_OPTIONS.includes(opt))
+    next[weekday] = cleaned.length > 0 ? cleaned : [DEFAULT_WEEKLY_PLAN[weekday][0]]
   }
-  return before
+  return next
 }
 
 /**
  * @param {Date} date
  * @param {string[]} missedDatesSorted ISO local YYYY-MM-DD, unique, sorted
- * @returns {{ kind: 'rest' } | { kind: 'missed' } | { kind: 'workout', id: string, label: string }}
+ * @param {{ [weekday: number]: string[] }} weeklyPlan
+ * @returns {{ kind: 'rest', label: string } | { kind: 'missed' } | { kind: 'workout', id: string, label: string, options: string[] }}
  */
-export function getWorkoutForDate(date, missedDatesSorted) {
+export function getWorkoutForDate(date, missedDatesSorted, weeklyPlan = DEFAULT_WEEKLY_PLAN) {
   const iso = toISODateLocal(date)
-
-  if (isSunday(date)) {
-    return { kind: 'rest', label: WORKOUT_LABELS.rest }
-  }
+  const day = new Date(date).getDay()
+  const normalizedPlan = normalizeWeeklyPlan(weeklyPlan)
 
   if (missedDatesSorted.includes(iso)) {
     return { kind: 'missed' }
   }
 
-  const ord = workingDayOrdinal(date)
-  if (ord === null) {
+  const options = normalizedPlan[day] ?? []
+  if (options.length === 0) {
     return { kind: 'rest', label: WORKOUT_LABELS.rest }
   }
 
-  const priorMisses = missedDatesSorted.filter((m) => m < iso).length
-  const idx = ord - priorMisses
-  const id = WORKOUT_CYCLE[((idx % WORKOUT_CYCLE.length) + WORKOUT_CYCLE.length) % WORKOUT_CYCLE.length]
+  const id = options[0]
 
   return {
     kind: 'workout',
     id,
     label: WORKOUT_LABELS[id] ?? id,
+    options,
   }
 }
 

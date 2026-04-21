@@ -15,7 +15,6 @@ import DaySelector from '../../components/DaySelector'
 import {
   getWorkoutForDate,
   isSameDay,
-  isSunday,
   toISODateLocal,
 } from './workoutSchedule'
 import { useAppStore } from '../../state/useAppStore'
@@ -82,6 +81,7 @@ function SchedulePage() {
   const [setsRepsDrafts, setSetsRepsDrafts] = useState({})
 
   const missedWorkoutDates = useAppStore((s) => s.missedWorkoutDates)
+  const weeklyPlan = useAppStore((s) => s.weeklyPlan)
   const addMissedWorkoutDate = useAppStore((s) => s.addMissedWorkoutDate)
   const removeMissedWorkoutDate = useAppStore((s) => s.removeMissedWorkoutDate)
   const clearMissedWorkoutDates = useAppStore((s) => s.clearMissedWorkoutDates)
@@ -89,9 +89,9 @@ function SchedulePage() {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
-  const planned = getWorkoutForDate(selectedDay, missedWorkoutDates)
+  const planned = getWorkoutForDate(selectedDay, missedWorkoutDates, weeklyPlan)
   const isTodaySelected = isSameDay(selectedDay, today)
-  const showWorkoutCheck = isTodaySelected && !isSunday(selectedDay)
+  const showWorkoutCheck = isTodaySelected
 
   const handleYes = () => {
     removeMissedWorkoutDate(toISODateLocal(today))
@@ -323,7 +323,12 @@ function SchedulePage() {
 
   return (
     <section className="flex flex-1 flex-col pt-4">
-      <DaySelector value={selectedDay} onChange={setSelectedDay} missedWorkoutDates={missedWorkoutDates} />
+      <DaySelector
+        value={selectedDay}
+        onChange={setSelectedDay}
+        missedWorkoutDates={missedWorkoutDates}
+        weeklyPlan={weeklyPlan}
+      />
 
       {showWorkoutCheck ? (
         <Motion.div

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { sortMissedDates } from '../features/schedule/workoutSchedule'
+import { DEFAULT_WEEKLY_PLAN, normalizeWeeklyPlan, sortMissedDates } from '../features/schedule/workoutSchedule'
 
 export const useAppStore = create(
   persist(
@@ -10,6 +10,7 @@ export const useAppStore = create(
       activeSessionId: null,
       /** ISO local YYYY-MM-DD for days you tapped “No” (did not train). Drives schedule shift. */
       missedWorkoutDates: [],
+      weeklyPlan: normalizeWeeklyPlan(DEFAULT_WEEKLY_PLAN),
       timer: {
         isRunning: false,
         startedAtPerf: null,
@@ -40,6 +41,13 @@ export const useAppStore = create(
           missedWorkoutDates: state.missedWorkoutDates.filter((d) => d !== isoDate),
         })),
       clearMissedWorkoutDates: () => set({ missedWorkoutDates: [] }),
+      setWeeklyPlanDayOptions: (weekday, options) =>
+        set((state) => ({
+          weeklyPlan: {
+            ...state.weeklyPlan,
+            [weekday]: normalizeWeeklyPlan({ ...state.weeklyPlan, [weekday]: options })[weekday],
+          },
+        })),
       setTimerState: (timerState) =>
         set((state) => ({
           timer: { ...state.timer, ...timerState },
@@ -57,6 +65,7 @@ export const useAppStore = create(
       name: 'systemsapp-storage',
       partialize: (state) => ({
         missedWorkoutDates: state.missedWorkoutDates,
+        weeklyPlan: state.weeklyPlan,
         streak: state.streak,
         profile: state.profile,
       }),

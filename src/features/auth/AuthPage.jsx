@@ -1,7 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion as Motion } from 'framer-motion'
-import { Camera, EnvelopeSimple, Gear, LockSimple, SignIn, SignOut, UserPlus, X } from '@phosphor-icons/react'
+import { Camera, EnvelopeSimple, Gear, LockSimple, Plus, SignIn, SignOut, Trash, UserPlus, X } from '@phosphor-icons/react'
 import { useAppStore } from '../../state/useAppStore'
+
+const WORKOUT_CHOICES = [
+  { value: 'push', label: 'Push' },
+  { value: 'pull', label: 'Pull' },
+  { value: 'leg', label: 'Leg' },
+  { value: 'cardio', label: 'Cardio' },
+]
+
+const WEEKDAY_ROWS = [
+  { day: 1, label: 'Monday' },
+  { day: 2, label: 'Tuesday' },
+  { day: 3, label: 'Wednesday' },
+  { day: 4, label: 'Thursday' },
+  { day: 5, label: 'Friday' },
+  { day: 6, label: 'Saturday' },
+  { day: 0, label: 'Sunday' },
+]
 
 function AuthPage({ hasSupabaseEnv, isSubmitting, onAuthenticate }) {
   const [mode, setMode] = useState('sign-in')
@@ -184,6 +201,8 @@ function SignedInBadge({ email, onLogout }) {
   const initial = email?.trim()?.charAt(0)?.toUpperCase() || 'U'
   const profile = useAppStore((s) => s.profile)
   const setProfileState = useAppStore((s) => s.setProfileState)
+  const weeklyPlan = useAppStore((s) => s.weeklyPlan)
+  const setWeeklyPlanDayOptions = useAppStore((s) => s.setWeeklyPlanDayOptions)
   const [draft, setDraft] = useState(profile)
 
   useEffect(() => {
@@ -282,7 +301,7 @@ function SignedInBadge({ email, onLogout }) {
           transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
           aria-label="Settings panel"
         >
-          <div className="mx-auto flex min-h-svh w-full max-w-md flex-col px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-[max(env(safe-area-inset-top),1rem)]">
+          <div className="mx-auto flex h-svh w-full max-w-md flex-col overflow-hidden px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-[max(env(safe-area-inset-top),1rem)]">
             <div className="flex shrink-0 items-center justify-between">
               <h2 className="text-xl font-semibold text-zinc-100">Settings</h2>
               <Motion.button
@@ -407,6 +426,80 @@ function SignedInBadge({ email, onLogout }) {
                     className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
                   />
                 </label>
+              </div>
+
+              <div className="mt-3 rounded-2xl bg-zinc-900/90 p-4">
+                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                  Schedule Editor
+                </p>
+                <p className="mt-1 text-[12px] text-zinc-500">
+                  Set workout options for each day (at least one option required).
+                </p>
+
+                <div className="mt-3 space-y-3">
+                  {WEEKDAY_ROWS.map(({ day, label }) => {
+                    const dayOptions =
+                      Array.isArray(weeklyPlan?.[day]) && weeklyPlan[day].length > 0
+                        ? weeklyPlan[day]
+                        : ['push']
+
+                    return (
+                      <div key={day} className="rounded-xl bg-zinc-950/70 p-3 ring-1 ring-white/10">
+                        <p className="text-[13px] font-semibold text-zinc-200">{label}</p>
+                        <div className="mt-2 space-y-2">
+                          {dayOptions.map((option, idx) => (
+                            <div key={`${day}-${idx}`} className="flex items-center gap-2">
+                              <select
+                                value={option}
+                                onChange={(event) => {
+                                  const next = [...dayOptions]
+                                  next[idx] = event.target.value
+                                  setWeeklyPlanDayOptions(day, next)
+                                }}
+                                className="min-h-[40px] flex-1 rounded-lg bg-zinc-900 px-3 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                              >
+                                {WORKOUT_CHOICES.map((choice) => (
+                                  <option key={choice.value} value={choice.value}>
+                                    {choice.label}
+                                  </option>
+                                ))}
+                              </select>
+
+                              <Motion.button
+                                type="button"
+                                onClick={() => {
+                                  if (dayOptions.length <= 1) return
+                                  const next = dayOptions.filter((_, i) => i !== idx)
+                                  setWeeklyPlanDayOptions(day, next)
+                                }}
+                                whileTap={{ scale: 0.95 }}
+                                disabled={dayOptions.length <= 1}
+                                className={`inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg ${
+                                  dayOptions.length <= 1
+                                    ? 'cursor-not-allowed bg-zinc-900 text-zinc-600'
+                                    : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800'
+                                }`}
+                                aria-label={`Remove option from ${label}`}
+                              >
+                                <Trash size={14} weight="bold" />
+                              </Motion.button>
+                            </div>
+                          ))}
+                        </div>
+
+                        <Motion.button
+                          type="button"
+                          onClick={() => setWeeklyPlanDayOptions(day, [...dayOptions, dayOptions[0]])}
+                          whileTap={{ scale: 0.98 }}
+                          className="mt-2 inline-flex min-h-[38px] items-center gap-1.5 rounded-lg bg-zinc-900 px-2.5 text-[12px] font-medium text-zinc-300 hover:bg-zinc-800"
+                        >
+                          <Plus size={13} weight="bold" />
+                          Add option
+                        </Motion.button>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </div>
 
