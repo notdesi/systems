@@ -1,6 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion as Motion } from 'framer-motion'
-import { Camera, EnvelopeSimple, Gear, LockSimple, Plus, SignIn, SignOut, Trash, UserPlus, X } from '@phosphor-icons/react'
+import {
+  Camera,
+  CaretLeft,
+  EnvelopeSimple,
+  Gear,
+  LockSimple,
+  Plus,
+  SignIn,
+  SignOut,
+  Trash,
+  UserPlus,
+  X,
+} from '@phosphor-icons/react'
 import { useAppStore } from '../../state/useAppStore'
 
 const WORKOUT_CHOICES = [
@@ -8,6 +20,7 @@ const WORKOUT_CHOICES = [
   { value: 'pull', label: 'Pull' },
   { value: 'leg', label: 'Leg' },
   { value: 'cardio', label: 'Cardio' },
+  { value: 'rest', label: 'Rest' },
 ]
 
 const WEEKDAY_ROWS = [
@@ -19,6 +32,14 @@ const WEEKDAY_ROWS = [
   { day: 6, label: 'Saturday' },
   { day: 0, label: 'Sunday' },
 ]
+
+const WORKOUT_LABEL_BY_VALUE = {
+  push: 'Push',
+  pull: 'Pull',
+  leg: 'Leg',
+  cardio: 'Cardio',
+  rest: 'Rest',
+}
 
 function AuthPage({ hasSupabaseEnv, isSubmitting, onAuthenticate }) {
   const [mode, setMode] = useState('sign-in')
@@ -204,6 +225,7 @@ function SignedInBadge({ email, onLogout }) {
   const weeklyPlan = useAppStore((s) => s.weeklyPlan)
   const setWeeklyPlanDayOptions = useAppStore((s) => s.setWeeklyPlanDayOptions)
   const [draft, setDraft] = useState(profile)
+  const [settingsView, setSettingsView] = useState('main')
 
   useEffect(() => {
     if (!isSettingsOpen) return undefined
@@ -217,6 +239,7 @@ function SignedInBadge({ email, onLogout }) {
   useEffect(() => {
     if (isSettingsOpen) {
       setDraft(profile)
+      setSettingsView('main')
     }
   }, [isSettingsOpen, profile])
 
@@ -303,7 +326,22 @@ function SignedInBadge({ email, onLogout }) {
         >
           <div className="mx-auto flex h-svh w-full max-w-md flex-col overflow-hidden px-5 pb-[max(env(safe-area-inset-bottom),1rem)] pt-[max(env(safe-area-inset-top),1rem)]">
             <div className="flex shrink-0 items-center justify-between">
-              <h2 className="text-xl font-semibold text-zinc-100">Settings</h2>
+              {settingsView === 'schedule' ? (
+                <Motion.button
+                  type="button"
+                  onClick={() => setSettingsView('main')}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex min-h-[44px] items-center gap-1 rounded-xl px-2 text-sm font-medium text-zinc-300 hover:bg-white/5"
+                >
+                  <CaretLeft size={16} weight="bold" />
+                  Back
+                </Motion.button>
+              ) : (
+                <span className="inline-block min-h-[44px]" />
+              )}
+              <h2 className="text-xl font-semibold text-zinc-100">
+                {settingsView === 'schedule' ? 'Edit Schedule' : 'Settings'}
+              </h2>
               <Motion.button
                 type="button"
                 onClick={() => setIsSettingsOpen(false)}
@@ -316,191 +354,227 @@ function SignedInBadge({ email, onLogout }) {
             </div>
 
             <div className="mt-5 min-h-0 flex-1 overflow-y-auto pb-4">
-              <div className="rounded-2xl bg-zinc-900/90 p-4">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-                Personal Information
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  {draft.photoDataUrl ? (
-                    <img
-                      src={draft.photoDataUrl}
-                      alt="Profile"
-                      className="h-16 w-16 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 text-lg font-medium text-zinc-200">
-                      {(draft.name?.trim()?.charAt(0) || initial).toUpperCase()}
-                    </div>
-                  )}
-                  <label className="absolute -bottom-1 -right-1 inline-flex min-h-[30px] min-w-[30px] cursor-pointer items-center justify-center rounded-full bg-zinc-700 text-zinc-100">
-                    <Camera size={14} weight="bold" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(event) => {
-                        const file = event.target.files?.[0]
-                        if (!file) return
-                        const reader = new FileReader()
-                        reader.onload = () => {
-                          const result = typeof reader.result === 'string' ? reader.result : ''
-                          setDraft((prev) => ({ ...prev, photoDataUrl: result }))
-                        }
-                        reader.readAsDataURL(file)
-                      }}
-                    />
-                  </label>
-                </div>
-                <p className="text-[13px] text-zinc-400">Add profile photo</p>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <label className="block">
-                  <span className="text-[13px] font-medium text-zinc-500">User name</span>
-                  <input
-                    type="text"
-                    value={draft.name}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
-                    placeholder="Your name"
-                    className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-[13px] font-medium text-zinc-500">Height (cm)</span>
-                  <input
-                    type="number"
-                    min="0"
-                    value={draft.heightCm}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, heightCm: event.target.value }))}
-                    placeholder="e.g. 175"
-                    className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-[13px] font-medium text-zinc-500">Weight (kg)</span>
-                  <input
-                    type="number"
-                    min="0"
-                    value={draft.weightKg}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, weightKg: event.target.value }))}
-                    placeholder="e.g. 72"
-                    className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="text-[13px] font-medium text-zinc-500">Gender</span>
-                  <select
-                    value={draft.gender}
-                    onChange={(event) => setDraft((prev) => ({ ...prev, gender: event.target.value }))}
-                    className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
-                  >
-                    <option value="">Select</option>
-                    <option value="female">Female</option>
-                    <option value="male">Male</option>
-                    <option value="non-binary">Non-binary</option>
-                    <option value="prefer-not-to-say">Prefer not to say</option>
-                  </select>
-                </label>
-              </div>
-              </div>
-
-              <div className="mt-3 rounded-2xl bg-zinc-900/90 p-4">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-                  Timer Duration
-                </p>
-                <label className="mt-3 block">
-                  <span className="text-[13px] font-medium text-zinc-500">Quick timer (seconds)</span>
-                  <input
-                    type="number"
-                    min="10"
-                    step="5"
-                    value={draft.quickTimerSeconds ?? 150}
-                    onChange={(event) =>
-                      setDraft((prev) => ({ ...prev, quickTimerSeconds: event.target.value }))
-                    }
-                    placeholder="e.g. 150"
-                    className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
-                  />
-                </label>
-              </div>
-
-              <div className="mt-3 rounded-2xl bg-zinc-900/90 p-4">
-                <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
-                  Schedule Editor
-                </p>
-                <p className="mt-1 text-[12px] text-zinc-500">
-                  Set workout options for each day (at least one option required).
-                </p>
-
-                <div className="mt-3 space-y-3">
-                  {WEEKDAY_ROWS.map(({ day, label }) => {
-                    const dayOptions =
-                      Array.isArray(weeklyPlan?.[day]) && weeklyPlan[day].length > 0
-                        ? weeklyPlan[day]
-                        : ['push']
-
-                    return (
-                      <div key={day} className="rounded-xl bg-zinc-950/70 p-3 ring-1 ring-white/10">
-                        <p className="text-[13px] font-semibold text-zinc-200">{label}</p>
-                        <div className="mt-2 space-y-2">
-                          {dayOptions.map((option, idx) => (
-                            <div key={`${day}-${idx}`} className="flex items-center gap-2">
-                              <select
-                                value={option}
-                                onChange={(event) => {
-                                  const next = [...dayOptions]
-                                  next[idx] = event.target.value
-                                  setWeeklyPlanDayOptions(day, next)
-                                }}
-                                className="min-h-[40px] flex-1 rounded-lg bg-zinc-900 px-3 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
-                              >
-                                {WORKOUT_CHOICES.map((choice) => (
-                                  <option key={choice.value} value={choice.value}>
-                                    {choice.label}
-                                  </option>
-                                ))}
-                              </select>
-
-                              <Motion.button
-                                type="button"
-                                onClick={() => {
-                                  if (dayOptions.length <= 1) return
-                                  const next = dayOptions.filter((_, i) => i !== idx)
-                                  setWeeklyPlanDayOptions(day, next)
-                                }}
-                                whileTap={{ scale: 0.95 }}
-                                disabled={dayOptions.length <= 1}
-                                className={`inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg ${
-                                  dayOptions.length <= 1
-                                    ? 'cursor-not-allowed bg-zinc-900 text-zinc-600'
-                                    : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800'
-                                }`}
-                                aria-label={`Remove option from ${label}`}
-                              >
-                                <Trash size={14} weight="bold" />
-                              </Motion.button>
-                            </div>
-                          ))}
-                        </div>
-
-                        <Motion.button
-                          type="button"
-                          onClick={() => setWeeklyPlanDayOptions(day, [...dayOptions, dayOptions[0]])}
-                          whileTap={{ scale: 0.98 }}
-                          className="mt-2 inline-flex min-h-[38px] items-center gap-1.5 rounded-lg bg-zinc-900 px-2.5 text-[12px] font-medium text-zinc-300 hover:bg-zinc-800"
-                        >
-                          <Plus size={13} weight="bold" />
-                          Add option
-                        </Motion.button>
+              {settingsView === 'main' ? (
+                <>
+                  <div className="rounded-2xl bg-zinc-900/90 p-4">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                      Personal Information
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        {draft.photoDataUrl ? (
+                          <img
+                            src={draft.photoDataUrl}
+                            alt="Profile"
+                            className="h-16 w-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-zinc-800 text-lg font-medium text-zinc-200">
+                            {(draft.name?.trim()?.charAt(0) || initial).toUpperCase()}
+                          </div>
+                        )}
+                        <label className="absolute -bottom-1 -right-1 inline-flex min-h-[30px] min-w-[30px] cursor-pointer items-center justify-center rounded-full bg-zinc-700 text-zinc-100">
+                          <Camera size={14} weight="bold" />
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="sr-only"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0]
+                              if (!file) return
+                              const reader = new FileReader()
+                              reader.onload = () => {
+                                const result = typeof reader.result === 'string' ? reader.result : ''
+                                setDraft((prev) => ({ ...prev, photoDataUrl: result }))
+                              }
+                              reader.readAsDataURL(file)
+                            }}
+                          />
+                        </label>
                       </div>
-                    )
-                  })}
+                      <p className="text-[13px] text-zinc-400">Add profile photo</p>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      <label className="block">
+                        <span className="text-[13px] font-medium text-zinc-500">User name</span>
+                        <input
+                          type="text"
+                          value={draft.name}
+                          onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
+                          placeholder="Your name"
+                          className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="text-[13px] font-medium text-zinc-500">Height (cm)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={draft.heightCm}
+                          onChange={(event) => setDraft((prev) => ({ ...prev, heightCm: event.target.value }))}
+                          placeholder="e.g. 175"
+                          className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="text-[13px] font-medium text-zinc-500">Weight (kg)</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={draft.weightKg}
+                          onChange={(event) => setDraft((prev) => ({ ...prev, weightKg: event.target.value }))}
+                          placeholder="e.g. 72"
+                          className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                        />
+                      </label>
+
+                      <label className="block">
+                        <span className="text-[13px] font-medium text-zinc-500">Gender</span>
+                        <select
+                          value={draft.gender}
+                          onChange={(event) => setDraft((prev) => ({ ...prev, gender: event.target.value }))}
+                          className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                        >
+                          <option value="">Select</option>
+                          <option value="female">Female</option>
+                          <option value="male">Male</option>
+                          <option value="non-binary">Non-binary</option>
+                          <option value="prefer-not-to-say">Prefer not to say</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 rounded-2xl bg-zinc-900/90 p-4">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                      Timer Duration
+                    </p>
+                    <label className="mt-3 block">
+                      <span className="text-[13px] font-medium text-zinc-500">Quick timer (seconds)</span>
+                      <input
+                        type="number"
+                        min="10"
+                        step="5"
+                        value={draft.quickTimerSeconds ?? 150}
+                        onChange={(event) =>
+                          setDraft((prev) => ({ ...prev, quickTimerSeconds: event.target.value }))
+                        }
+                        placeholder="e.g. 150"
+                        className="mt-1.5 min-h-[44px] w-full rounded-xl bg-zinc-950 px-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="mt-3 rounded-2xl bg-zinc-900/90 p-4">
+                    <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                      Current Schedule
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {WEEKDAY_ROWS.map(({ day, label }) => {
+                        const dayOptions =
+                          Array.isArray(weeklyPlan?.[day]) && weeklyPlan[day].length > 0
+                            ? weeklyPlan[day]
+                            : ['push']
+
+                        return (
+                          <div key={`summary-${day}`} className="rounded-lg bg-zinc-950/70 px-3 py-2">
+                            <p className="text-[13px] font-semibold text-zinc-200">{label}</p>
+                            <p className="mt-0.5 text-[12px] text-zinc-500">
+                              {dayOptions
+                                .map((option) => WORKOUT_LABEL_BY_VALUE[option] ?? option)
+                                .join(' / ')}
+                            </p>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <Motion.button
+                      type="button"
+                      onClick={() => setSettingsView('schedule')}
+                      whileTap={{ scale: 0.98 }}
+                      className="mt-3 inline-flex min-h-[42px] items-center justify-center rounded-xl bg-zinc-800 px-4 text-[13px] font-semibold text-zinc-200 hover:bg-zinc-700"
+                    >
+                      Edit schedule
+                    </Motion.button>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-2xl bg-zinc-900/90 p-4">
+                  <p className="text-[12px] font-semibold uppercase tracking-[0.14em] text-zinc-500">
+                    Schedule Editor
+                  </p>
+                  <p className="mt-1 text-[12px] text-zinc-500">
+                    Set workout options for each day (at least one option required).
+                  </p>
+
+                  <div className="mt-3 space-y-3">
+                    {WEEKDAY_ROWS.map(({ day, label }) => {
+                      const dayOptions =
+                        Array.isArray(weeklyPlan?.[day]) && weeklyPlan[day].length > 0
+                          ? weeklyPlan[day]
+                          : ['push']
+
+                      return (
+                        <div key={day} className="rounded-xl bg-zinc-950/70 p-3 ring-1 ring-white/10">
+                          <p className="text-[13px] font-semibold text-zinc-200">{label}</p>
+                          <div className="mt-2 space-y-2">
+                            {dayOptions.map((option, idx) => (
+                              <div key={`${day}-${idx}`} className="flex items-center gap-2">
+                                <select
+                                  value={option}
+                                  onChange={(event) => {
+                                    const next = [...dayOptions]
+                                    next[idx] = event.target.value
+                                    setWeeklyPlanDayOptions(day, next)
+                                  }}
+                                  className="min-h-[40px] flex-1 rounded-lg bg-zinc-900 px-3 text-[13px] text-zinc-200 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                                >
+                                  {WORKOUT_CHOICES.map((choice) => (
+                                    <option key={choice.value} value={choice.value}>
+                                      {choice.label}
+                                    </option>
+                                  ))}
+                                </select>
+
+                                <Motion.button
+                                  type="button"
+                                  onClick={() => {
+                                    if (dayOptions.length <= 1) return
+                                    const next = dayOptions.filter((_, i) => i !== idx)
+                                    setWeeklyPlanDayOptions(day, next)
+                                  }}
+                                  whileTap={{ scale: 0.95 }}
+                                  disabled={dayOptions.length <= 1}
+                                  className={`inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-lg ${
+                                    dayOptions.length <= 1
+                                      ? 'cursor-not-allowed bg-zinc-900 text-zinc-600'
+                                      : 'bg-zinc-900 text-zinc-300 hover:bg-zinc-800'
+                                  }`}
+                                  aria-label={`Remove option from ${label}`}
+                                >
+                                  <Trash size={14} weight="bold" />
+                                </Motion.button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <Motion.button
+                            type="button"
+                            onClick={() => setWeeklyPlanDayOptions(day, [...dayOptions, dayOptions[0]])}
+                            whileTap={{ scale: 0.98 }}
+                            className="mt-2 inline-flex min-h-[38px] items-center gap-1.5 rounded-lg bg-zinc-900 px-2.5 text-[12px] font-medium text-zinc-300 hover:bg-zinc-800"
+                          >
+                            <Plus size={13} weight="bold" />
+                            Add option
+                          </Motion.button>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="mt-auto grid shrink-0 grid-cols-2 gap-3 pt-2">
