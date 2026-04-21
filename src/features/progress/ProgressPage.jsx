@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion as Motion } from 'framer-motion'
 import { Check, Fire } from '@phosphor-icons/react'
 import { useAppStore } from '../../state/useAppStore'
@@ -6,134 +6,119 @@ import { db } from '../../db/db'
 import { WORKOUT_PROGRAM_UPDATED } from '../schedule/workoutProgram'
 
 const WEEK_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const FILTERS = [
-  { id: 'week', label: 'This week' },
-  { id: 'month', label: 'This month' },
-]
-const COMPOUND_KEYWORDS = [
-  'bench',
-  'squat',
-  'deadlift',
-  'overhead press',
-  'shoulder press',
-  'row',
-  'pull up',
-  'chin up',
-  'lunge',
-  'hip thrust',
-]
 
 function parsePRWeight(valueStr) {
   const match = String(valueStr ?? '')
     .trim()
     .match(/(\d+(?:\.\d+)?)/)
   if (!match) return null
-  const value = Number.parseFloat(match[1])
-  return Number.isFinite(value) ? value : null
+  const n = Number.parseFloat(match[1])
+  return Number.isFinite(n) ? n : null
 }
 
-function startOfLocalDay(dateLike) {
-  const d = new Date(dateLike)
-  d.setHours(0, 0, 0, 0)
-  return d
-}
-
-function getRangeBounds(filter) {
-  const now = new Date()
-  const currentEnd = now
-  const currentStart = startOfLocalDay(now)
-
-  if (filter === 'week') {
-    const day = currentStart.getDay() // 0=Sun
-    const mondayOffset = day === 0 ? -6 : 1 - day
-    currentStart.setDate(currentStart.getDate() + mondayOffset)
-    const previousStart = new Date(currentStart)
-    previousStart.setDate(previousStart.getDate() - 7)
-    const previousEnd = new Date(currentStart)
-    previousEnd.setMilliseconds(-1)
-    return { currentStart, currentEnd, previousStart, previousEnd }
-  }
-
-  currentStart.setDate(1)
-  const previousStart = new Date(currentStart)
-  previousStart.setMonth(previousStart.getMonth() - 1)
-  const previousEnd = new Date(currentStart)
-  previousEnd.setMilliseconds(-1)
-  return { currentStart, currentEnd, previousStart, previousEnd }
+function parseSetsReps(value) {
+  const match = String(value ?? '')
+    .trim()
+    .match(/^(\d+)\s*x\s*(\d+)$/i)
+  if (!match) return null
+  const sets = Number.parseInt(match[1], 10)
+  const reps = Number.parseInt(match[2], 10)
+  if (!Number.isFinite(sets) || !Number.isFinite(reps) || sets <= 0 || reps <= 0) return null
+  return { sets, reps }
 }
 
 function ProgressPage() {
   const streak = useAppStore((s) => s.streak)
-  const [filter, setFilter] = useState('week')
-  const [liftMetrics, setLiftMetrics] = useState({
-    avg: null,
-    deltaPct: null,
-    sampleCount: 0,
-  })
+  const [strengthFilter, setStrengthFilter] = useState('week')
+  const [strengthDeltaPct, setStrengthDeltaPct] = useState(null)
   const jsDay = new Date().getDay() // 0=Sun ... 6=Sat
   const todayIndex = jsDay === 0 ? 6 : jsDay - 1 // Mon=0 ... Sun=6
   const completedBeforeToday = Math.min(Math.max(streak.current, 0), todayIndex)
 
-  const compoundRegex = useMemo(
-    () => new RegExp(COMPOUND_KEYWORDS.map((k) => k.replace(/\s+/g, '\\s+')).join('|'), 'i'),
-    []
-  )
-
   useEffect(() => {
     let cancelled = false
 
-    async function computeLiftMetrics() {
-      const { currentStart, currentEnd, previousStart, previousEnd } = getRangeBounds(filter)
-      const [allExercises, allPRs] = await Promise.all([db.exercises.toArray(), db.exercisePRs.toArray()])
+    async function computeStrengthProgress() {
+      const now = new Date()
+      const todayStart = new Date(now)
+      todayStart.setHours(0, 0, 0, 0)
 
-      const compoundExerciseIds = new Set(
-        allExercises.filter((e) => compoundRegex.test(e.name ?? '')).map((e) => e.id)
-      )
+      let currentStart
+      let previousStart
+      let previousEnd
 
-      const usable = allPRs
-        .filter((row) => compoundExerciseIds.has(row.exerciseId))
-        .map((row) => ({
-          ...row,
-          weight: parsePRWeight(row.valueStr),
-        }))
-        .filter((row) => row.weight != null)
+      if (strengthFilter === 'month') {
+        currentStart = new Date(todayStart)
+        currentStart.setDate(1)
+        previousStart = new Date(currentStart)
+        previousStart.setMonth(previousStart.getMonth() - 1)
+        previousEnd = new Date(currentStart)
+        previousEnd.setMilliseconds(-1)
+      } else {
+        const day = todayStart.getDay() // 0=Sun
+        const mondayOffset = day === 0 ? -6 : 1 - day
+        currentStart = new Date(todayStart)
+        currentStart.setDate(currentStart.getDate() + mondayOffset)
+        previousStart = new Date(currentStart)
+        previousStart.setDate(previousStart.getDate() - 7)
+        previousEnd = new Date(currentStart)
+        previousEnd.setMilliseconds(-1)
+      }
 
-      const currentRows = usable.filter((row) => {
-        const ts = row.updatedAt ?? 0
-        return ts >= currentStart.getTime() && ts <= currentEnd.getTime()
-      })
-      const previousRows = usable.filter((row) => {
-        const ts = row.updatedAt ?? 0
-        return ts >= previousStart.getTime() && ts <= previousEnd.getTime()
-      })
+      const [completions, prs, templateRows] = await Promise.all([
+        db.exerciseCompletions.toArray(),
+        db.exercisePRs.toArray(),
+        db.workoutTemplateItems.toArray(),
+      ])
 
-      const avg = (rows) =>
-        rows.length ? rows.reduce((sum, row) => sum + row.weight, 0) / rows.length : null
+      const prByExercise = new Map()
+      for (const row of prs) {
+        prByExercise.set(row.exerciseId, parsePRWeight(row.valueStr))
+      }
 
-      const currentAvg = avg(currentRows)
-      const previousAvg = avg(previousRows)
-      const deltaPct =
-        currentAvg != null && previousAvg != null && previousAvg > 0
-          ? ((currentAvg - previousAvg) / previousAvg) * 100
-          : null
+      const setsRepsByExercise = new Map()
+      for (const row of templateRows) {
+        const parsed = parseSetsReps(row.setsReps)
+        if (!parsed) continue
+        const existing = setsRepsByExercise.get(row.exerciseId)
+        if (!existing || (row.updatedAt ?? 0) > existing.updatedAt) {
+          setsRepsByExercise.set(row.exerciseId, { ...parsed, updatedAt: row.updatedAt ?? 0 })
+        }
+      }
+
+      const scoreForRange = (startMs, endMs) =>
+        completions
+          .filter((row) => {
+            if (!row.done || !row.date) return false
+            const doneAt = new Date(`${row.date}T00:00:00`)
+            const ts = doneAt.getTime()
+            return ts >= startMs && ts <= endMs
+          })
+          .reduce((sum, row) => {
+            const pr = prByExercise.get(row.exerciseId)
+            const sr = setsRepsByExercise.get(row.exerciseId)
+            if (!pr || !sr) return sum
+            return sum + sr.sets * sr.reps * pr
+          }, 0)
+
+      const currentScore = scoreForRange(currentStart.getTime(), now.getTime())
+      const previousScore = scoreForRange(previousStart.getTime(), previousEnd.getTime())
+      const pct =
+        previousScore > 0 ? ((currentScore - previousScore) / previousScore) * 100 : null
 
       if (!cancelled) {
-        setLiftMetrics({
-          avg: currentAvg,
-          deltaPct,
-          sampleCount: currentRows.length,
-        })
+        setStrengthDeltaPct(pct)
       }
     }
 
-    computeLiftMetrics()
-    const onUpdate = () => computeLiftMetrics()
+    computeStrengthProgress()
+    const onUpdate = () => computeStrengthProgress()
     window.addEventListener(WORKOUT_PROGRAM_UPDATED, onUpdate)
     return () => {
       cancelled = true
       window.removeEventListener(WORKOUT_PROGRAM_UPDATED, onUpdate)
     }
-  }, [compoundRegex, filter])
+  }, [strengthFilter])
 
   return (
     <section className="flex w-full max-w-full flex-1 flex-col overflow-hidden pt-5">
@@ -196,50 +181,40 @@ function ProgressPage() {
         transition={{ duration: 0.24, ease: [0.25, 0.1, 0.25, 1] }}
       >
         <div className="flex items-start justify-between gap-3">
-          <p className="text-[15px] font-semibold text-zinc-100">Average lift</p>
-          <label className="sr-only" htmlFor="progress-lift-filter">
-            Filter timeframe
-          </label>
+          <div>
+            <p className="text-[15px] font-semibold text-zinc-100">Strength progress</p>
+            <p className="mt-1 text-[13px] text-zinc-500">
+              {strengthFilter === 'month' ? 'This month vs last month' : 'This week vs last week'}
+            </p>
+          </div>
           <select
-            id="progress-lift-filter"
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
-            className="min-h-[36px] rounded-lg bg-zinc-900 px-2.5 text-[13px] text-zinc-300 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+            value={strengthFilter}
+            onChange={(event) => setStrengthFilter(event.target.value)}
+            className="min-h-[34px] rounded-lg bg-zinc-900 px-2.5 text-[12px] text-zinc-300 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+            aria-label="Strength progress timeframe"
           >
-            {FILTERS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
+            <option value="week">Week</option>
+            <option value="month">Month</option>
           </select>
         </div>
 
-        <div className="mt-3">
-          <p className="text-[13px] text-zinc-500">Compound PR average</p>
-        </div>
-
-        <div className="mt-2 flex items-end justify-between gap-3">
-          <div>
-            <p className="text-[28px] font-semibold tabular-nums text-zinc-100">
-              {liftMetrics.avg != null ? `${liftMetrics.avg.toFixed(1)} kg` : '—'}
-            </p>
-          </div>
+        <div className="mt-3 flex items-end justify-between gap-3">
           <p
-            className={`text-[16px] font-semibold tabular-nums ${
-              liftMetrics.deltaPct == null
-                ? 'text-zinc-500'
-                : liftMetrics.deltaPct >= 0
+            className={`text-[32px] font-semibold tabular-nums ${
+              strengthDeltaPct == null
+                ? 'text-zinc-300'
+                : strengthDeltaPct >= 0
                   ? 'text-emerald-400'
                   : 'text-red-400'
             }`}
           >
-            {liftMetrics.deltaPct == null
+            {strengthDeltaPct == null
               ? '—'
-              : `${liftMetrics.deltaPct >= 0 ? '+' : ''}${liftMetrics.deltaPct.toFixed(1)}%`}
+              : `${strengthDeltaPct >= 0 ? '+' : ''}${strengthDeltaPct.toFixed(1)}%`}
           </p>
         </div>
-        <p className="mt-1 text-[12px] text-zinc-500">{liftMetrics.sampleCount} samples</p>
       </Motion.div>
+
     </section>
   )
 }

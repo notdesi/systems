@@ -100,81 +100,83 @@ function App() {
   return (
     <Motion.main
       id="app-root"
-      className="min-h-svh w-full bg-black"
+      className="h-svh w-full overflow-hidden bg-black"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      <div className="mx-auto flex min-h-svh w-full max-w-md flex-col px-5 pb-32 pt-[max(env(safe-area-inset-top),1rem)]">
-        <header className="flex items-center justify-start">
+      <div className="mx-auto flex h-svh w-full max-w-md flex-col px-5 pb-32 pt-[max(env(safe-area-inset-top),1rem)]">
+        <header className="shrink-0 flex items-center justify-start">
           <DomainSelector selectedDomain={selectedDomain} onSelect={setSelectedDomain} />
           <AuthPage.SignedInBadge email={session?.user?.email ?? 'Logged in'} onLogout={handleLogout} />
         </header>
 
-        <AnimatePresence mode="wait">
-          {selectedNavTab === 'today' ? (
-            <Motion.div
-              key="tab-today"
-              className="flex flex-1 flex-col"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <TodayPage />
-            </Motion.div>
-          ) : selectedNavTab === 'schedule' ? (
-            <Motion.div
-              key="tab-schedule"
-              className="flex flex-1 flex-col"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <SchedulePage />
-            </Motion.div>
-          ) : selectedNavTab === 'widgets' ? (
-            <Motion.div
-              key="tab-widgets"
-              className="flex flex-1 flex-col"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <WidgetsPage />
-            </Motion.div>
-          ) : selectedNavTab === 'progress' ? (
-            <Motion.div
-              key="tab-progress"
-              className="flex flex-1 flex-col"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <ProgressPage />
-            </Motion.div>
-          ) : (
-            <Motion.section
-              key="tab-other"
-              className="flex flex-1 items-center justify-center"
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-            >
-              <div className="rounded-3xl bg-white/[0.06] px-6 py-7 text-center">
-                <p className="text-[13px] uppercase tracking-[0.18em] text-zinc-500">Current Domain</p>
-                <h1 className="mt-3 text-2xl font-semibold text-zinc-100">
-                  {selectedDomain.charAt(0).toUpperCase() + selectedDomain.slice(1)}
-                </h1>
-                <p className="mt-2 text-[14px] text-zinc-400">App content will be based on this selection.</p>
-              </div>
-            </Motion.section>
-          )}
-        </AnimatePresence>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <AnimatePresence mode="wait">
+            {selectedNavTab === 'today' ? (
+              <Motion.div
+                key="tab-today"
+                className="flex flex-1 flex-col"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <TodayPage />
+              </Motion.div>
+            ) : selectedNavTab === 'schedule' ? (
+              <Motion.div
+                key="tab-schedule"
+                className="flex flex-1 flex-col"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <SchedulePage />
+              </Motion.div>
+            ) : selectedNavTab === 'widgets' ? (
+              <Motion.div
+                key="tab-widgets"
+                className="flex flex-1 flex-col"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <WidgetsPage />
+              </Motion.div>
+            ) : selectedNavTab === 'progress' ? (
+              <Motion.div
+                key="tab-progress"
+                className="flex flex-1 flex-col"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <ProgressPage />
+              </Motion.div>
+            ) : (
+              <Motion.section
+                key="tab-other"
+                className="flex flex-1 items-center justify-center"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                <div className="rounded-3xl bg-white/[0.06] px-6 py-7 text-center">
+                  <p className="text-[13px] uppercase tracking-[0.18em] text-zinc-500">Current Domain</p>
+                  <h1 className="mt-3 text-2xl font-semibold text-zinc-100">
+                    {selectedDomain.charAt(0).toUpperCase() + selectedDomain.slice(1)}
+                  </h1>
+                  <p className="mt-2 text-[14px] text-zinc-400">App content will be based on this selection.</p>
+                </div>
+              </Motion.section>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
       <BottomNavigation selectedTab={selectedNavTab} onSelect={setSelectedNavTab} />
     </Motion.main>
