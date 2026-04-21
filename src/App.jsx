@@ -5,6 +5,7 @@ import BottomNavigation from './components/BottomNavigation'
 import SchedulePage from './features/schedule/SchedulePage'
 import TodayPage from './features/today/TodayPage'
 import WidgetsPage from './features/widgets/WidgetsPage'
+import ProgressPage from './features/progress/ProgressPage'
 import { useAppStore } from './state/useAppStore'
 import AuthPage from './features/auth/AuthPage'
 import { hasSupabaseEnv, supabase } from './lib/supabase'
@@ -143,6 +144,17 @@ function App() {
               transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <WidgetsPage />
+            </Motion.div>
+          ) : selectedNavTab === 'progress' ? (
+            <Motion.div
+              key="tab-progress"
+              className="flex flex-1 flex-col"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+            >
+              <ProgressPage />
             </Motion.div>
           ) : (
             <Motion.section
