@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AnimatePresence, animate, motion as Motion } from 'framer-motion'
+import { AnimatePresence, motion as Motion } from 'framer-motion'
 import DomainSelector from './components/DomainSelector'
 import BottomNavigation from './components/BottomNavigation'
 import SchedulePage from './features/schedule/SchedulePage'
@@ -17,12 +17,6 @@ function App() {
   const [session, setSession] = useState(null)
   const [isAppLoading, setIsAppLoading] = useState(true)
   const [isAuthSubmitting, setIsAuthSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (isAppLoading) return undefined
-    const controls = animate('#app-root', { opacity: [0, 1] }, { duration: 0.2, ease: 'easeOut' })
-    return () => controls.stop()
-  }, [isAppLoading])
 
   useEffect(() => {
     if (!supabase) {
@@ -103,10 +97,12 @@ function App() {
   }
 
   return (
-    <main
+    <Motion.main
       id="app-root"
       className="min-h-svh w-full bg-black"
-      style={{ opacity: 0 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
     >
       <div className="mx-auto flex min-h-svh w-full max-w-md flex-col px-5 pb-28 pt-5">
         <header className="flex items-center justify-start">
@@ -169,7 +165,7 @@ function App() {
         </AnimatePresence>
       </div>
       <BottomNavigation selectedTab={selectedNavTab} onSelect={setSelectedNavTab} />
-    </main>
+    </Motion.main>
   )
 }
 
