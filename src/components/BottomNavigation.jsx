@@ -10,7 +10,7 @@ const NAV_ITEMS = [
 
 function BottomNavigation({ selectedTab, onSelect }) {
   return (
-    <nav className="fixed inset-x-0 bottom-4 z-30 mx-auto w-full max-w-md px-5">
+    <nav className="fixed inset-x-0 bottom-[max(env(safe-area-inset-bottom),0.75rem)] z-30 mx-auto w-full max-w-md px-5">
       <div className="grid grid-cols-4 rounded-[999px] bg-zinc-900/95 p-2 shadow-[0_8px_36px_rgba(0,0,0,0.55)] backdrop-blur">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
@@ -30,7 +30,7 @@ function BottomNavigation({ selectedTab, onSelect }) {
               }`}
             >
               <Icon size={18} weight={isActive ? 'fill' : 'regular'} />
-              <span className="text-[11px] font-medium">{item.label}</span>
+              <span className="text-[13px] font-medium">{item.label}</span>
             </Motion.button>
           )
         })}

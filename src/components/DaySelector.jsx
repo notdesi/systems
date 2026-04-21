@@ -26,7 +26,7 @@ function DaySelector({ value, onChange, missedWorkoutDates = null }) {
 
   return (
     <div
-      className="flex gap-1.5 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       role="tablist"
       aria-label="Week days"
     >
@@ -45,18 +45,18 @@ function DaySelector({ value, onChange, missedWorkoutDates = null }) {
             onClick={() => onChange(new Date(day))}
             whileTap={{ scale: 0.94 }}
             transition={{ type: 'spring', stiffness: 480, damping: 30 }}
-            className={`flex min-h-[2.75rem] min-w-[2.85rem] shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl px-2 py-2 text-center transition-colors duration-150 ${
+            className={`flex min-h-[48px] min-w-[52px] shrink-0 flex-col items-center justify-center gap-0.5 rounded-2xl px-2 py-2 text-center transition-colors duration-150 ${
               selected
                 ? 'bg-zinc-700/50 text-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/35'
                 : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'
             }`}
           >
-            <span className="text-[10px] font-medium uppercase tracking-wide opacity-90">
+            <span className="text-[12px] font-medium uppercase tracking-wide opacity-90">
               {weekdayFmt.format(day)}
             </span>
             {strip != null ? (
               <span
-                className={`max-w-[3.25rem] truncate text-[9px] font-medium leading-tight ${
+                className={`max-w-[3.5rem] truncate text-[11px] font-medium leading-tight ${
                   selected ? 'text-zinc-200' : 'text-zinc-500'
                 }`}
               >

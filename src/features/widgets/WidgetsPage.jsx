@@ -40,7 +40,7 @@ function WidgetsPage() {
                 <div className="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-xl bg-zinc-800 text-[var(--color-primary)]">
                   <Icon size={18} weight="bold" />
                 </div>
-                <p className="text-sm font-semibold text-zinc-100">{widget.name}</p>
+                <p className="text-[16px] font-semibold text-zinc-100">{widget.name}</p>
                 <span className="ml-auto inline-flex min-h-[30px] min-w-[30px] items-center justify-center rounded-full bg-zinc-800/90 text-zinc-300">
                   <CaretRight size={14} weight="bold" />
                 </span>

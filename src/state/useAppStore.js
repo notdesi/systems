@@ -20,6 +20,14 @@ export const useAppStore = create(
         longest: 0,
         lastCompletedDate: null,
       },
+      profile: {
+        name: '',
+        heightCm: '',
+        weightKg: '',
+        gender: '',
+        photoDataUrl: '',
+        quickTimerSeconds: 150,
+      },
       setSelectedDomain: (domain) => set({ selectedDomain: domain }),
       setSelectedNavTab: (tab) => set({ selectedNavTab: tab }),
       setActiveSessionId: (sessionId) => set({ activeSessionId: sessionId }),
@@ -40,11 +48,17 @@ export const useAppStore = create(
         set((state) => ({
           streak: { ...state.streak, ...streakState },
         })),
+      setProfileState: (profileState) =>
+        set((state) => ({
+          profile: { ...state.profile, ...profileState },
+        })),
     }),
     {
       name: 'systemsapp-storage',
       partialize: (state) => ({
         missedWorkoutDates: state.missedWorkoutDates,
+        streak: state.streak,
+        profile: state.profile,
       }),
     }
   )

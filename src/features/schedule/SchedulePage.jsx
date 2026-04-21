@@ -332,14 +332,14 @@ function SchedulePage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
         >
-          <span className="text-[10px] font-medium text-zinc-500">Trained today?</span>
+          <span className="text-[13px] font-medium text-zinc-500">Trained today?</span>
           <div className="inline-flex rounded-lg bg-white/[0.06] p-0.5">
             <Motion.button
               type="button"
               onClick={handleYes}
               whileTap={{ scale: 0.94 }}
               transition={{ type: 'spring', stiffness: 520, damping: 32 }}
-              className={`rounded-md px-2 py-1 text-[10px] font-semibold transition-colors duration-150 ${
+              className={`min-h-[36px] rounded-md px-3 py-1.5 text-[13px] font-semibold transition-colors duration-150 ${
                 !todayIsMissed
                   ? 'bg-zinc-600/80 text-[var(--color-primary)]'
                   : 'text-zinc-500 hover:text-zinc-300'
@@ -352,7 +352,7 @@ function SchedulePage() {
               onClick={handleNo}
               whileTap={{ scale: 0.94 }}
               transition={{ type: 'spring', stiffness: 520, damping: 32 }}
-              className={`rounded-md px-2 py-1 text-[10px] font-semibold transition-colors duration-150 ${
+              className={`min-h-[36px] rounded-md px-3 py-1.5 text-[13px] font-semibold transition-colors duration-150 ${
                 todayIsMissed
                   ? 'bg-zinc-600/80 text-[var(--color-primary)]'
                   : 'text-zinc-500 hover:text-zinc-300'
@@ -382,7 +382,7 @@ function SchedulePage() {
           whileTap={workoutType ? { scale: 0.9 } : undefined}
           whileHover={workoutType ? { scale: 1.04 } : undefined}
           transition={{ type: 'spring', stiffness: 480, damping: 28 }}
-          className={`inline-flex h-8 w-8 items-center justify-center rounded-lg text-zinc-300 ${
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-lg text-zinc-300 ${
             workoutType
               ? 'bg-white/[0.08] hover:bg-white/[0.14]'
               : 'cursor-not-allowed bg-white/[0.04] opacity-40'
@@ -393,17 +393,17 @@ function SchedulePage() {
       </div>
 
       {templateLoading && workoutType ? (
-        <p className="mt-4 text-xs font-medium text-zinc-500">Loading exercises…</p>
+        <p className="mt-4 text-[14px] font-medium text-zinc-500">Loading exercises…</p>
       ) : null}
 
       {!workoutType ? (
-        <p className="mt-4 text-xs font-medium text-zinc-500">
+        <p className="mt-4 text-[14px] font-medium text-zinc-500">
           Pick a training day to see that session&apos;s template. Rest and missed days have no exercise list here.
         </p>
       ) : null}
 
       {workoutType && !templateLoading && exerciseItems.length === 0 ? (
-        <p className="mt-4 text-xs font-medium text-zinc-500">
+        <p className="mt-4 text-[14px] font-medium text-zinc-500">
           No exercises in this template yet. Open edit to add movements from the library.
         </p>
       ) : null}
@@ -422,10 +422,10 @@ function SchedulePage() {
               <div className="flex items-start justify-between gap-3">
                 <p className="min-w-0 truncate text-sm font-semibold text-zinc-100">{exercise.name}</p>
                 <div className="flex items-center gap-2">
-                  <p className="text-[11px] font-medium text-zinc-400">PR {exercise.prDisplay}</p>
+                  <p className="text-[13px] font-medium text-zinc-400">PR {exercise.prDisplay}</p>
                 </div>
               </div>
-              <p className="mt-1 text-xs font-medium text-zinc-500">{exercise.setsReps}</p>
+              <p className="mt-1 text-[14px] font-medium text-zinc-500">{exercise.setsReps}</p>
             </Motion.li>
           ))}
         </ul>
@@ -440,7 +440,7 @@ function SchedulePage() {
             }
           }}
           whileTap={{ scale: 0.97 }}
-          className="text-[11px] font-medium text-zinc-600 underline decoration-zinc-700 underline-offset-2 transition-colors duration-150 hover:text-zinc-400"
+          className="text-[13px] font-medium text-zinc-600 underline decoration-zinc-700 underline-offset-2 transition-colors duration-150 hover:text-zinc-400"
         >
           Reset schedule shifts
         </Motion.button>
@@ -486,14 +486,14 @@ function SchedulePage() {
                     onClick={closeEditPanel}
                     whileTap={{ scale: 0.96 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                    className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1.5 text-[11px] font-semibold text-zinc-200 transition-colors duration-150 hover:bg-white/15"
+                    className="inline-flex min-h-[40px] items-center gap-1 rounded-lg bg-white/10 px-3 py-2 text-[13px] font-semibold text-zinc-200 transition-colors duration-150 hover:bg-white/15"
                   >
                     <Check size={14} weight="bold" className="text-[var(--color-primary)]" />
                     Done
                   </Motion.button>
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(env(safe-area-inset-bottom),1.5rem)] pt-3">
-                  <p className="text-[11px] font-medium text-zinc-500">Search (WGER)</p>
+                  <p className="text-[13px] font-medium text-zinc-500">Search (WGER)</p>
                   <div className="mt-2 space-y-2">
                     <div className="relative">
                       <MagnifyingGlass
@@ -508,20 +508,20 @@ function SchedulePage() {
                         onChange={(event) => setExerciseSearchQuery(event.target.value)}
                         placeholder="Type at least 2 characters…"
                         autoComplete="off"
-                        className="w-full rounded-lg bg-zinc-900/90 py-2 pl-9 pr-3 text-xs text-zinc-200 placeholder:text-zinc-600 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                        className="w-full rounded-lg bg-zinc-900/90 py-2.5 pl-9 pr-3 text-base text-zinc-200 placeholder:text-zinc-600 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
                       />
                     </div>
                     {searchStatus === 'loading' ? (
-                      <p className="text-xs text-zinc-500">Searching…</p>
+                      <p className="text-[14px] text-zinc-500">Searching…</p>
                     ) : null}
-                    {searchStatus === 'error' ? <p className="text-xs text-red-400">{searchError}</p> : null}
+                    {searchStatus === 'error' ? <p className="text-[14px] text-red-400">{searchError}</p> : null}
                     {searchStatus === 'success' ? (
                       <ul
                         className="max-h-40 space-y-1 overflow-y-auto rounded-lg bg-zinc-900/85 p-1"
                         aria-label="Exercise search results"
                       >
                         {searchResults.length === 0 ? (
-                          <li className="px-2 py-2 text-center text-[11px] text-zinc-500">No matches</li>
+                          <li className="px-2 py-2 text-center text-[13px] text-zinc-500">No matches</li>
                         ) : (
                           searchResults.map((entry) => {
                             const wgerId = entry.kind === 'local' ? entry.dexieRow.wgerId : entry.wgerId
@@ -535,7 +535,7 @@ function SchedulePage() {
                                   disabled={already}
                                   onClick={() => handlePickSearchResult(entry)}
                                   whileTap={already ? undefined : { scale: 0.98 }}
-                                  className={`flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-xs font-medium transition-colors duration-150 ${
+                                  className={`flex min-h-[40px] w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-[14px] font-medium transition-colors duration-150 ${
                                     already
                                       ? 'cursor-not-allowed text-zinc-600'
                                       : 'text-zinc-200 hover:bg-white/10'
@@ -544,7 +544,7 @@ function SchedulePage() {
                                   <span className="min-w-0 truncate">
                                     {label}
                                     {entry.kind === 'local' ? (
-                                      <span className="ml-1 text-[10px] font-normal text-zinc-600"> Saved </span>
+                                      <span className="ml-1 text-[12px] font-normal text-zinc-600"> Saved </span>
                                     ) : null}
                                   </span>
                                   {already ? (
@@ -562,11 +562,11 @@ function SchedulePage() {
                     {searchStatus === 'idle' &&
                     exerciseSearchQuery.trim().length > 0 &&
                     exerciseSearchQuery.trim().length < 2 ? (
-                      <p className="text-[11px] text-zinc-600">Enter at least 2 characters to search.</p>
+                      <p className="text-[13px] text-zinc-600">Enter at least 2 characters to search.</p>
                     ) : null}
                   </div>
 
-                  <p className="mt-4 text-[11px] font-medium text-zinc-500">Add custom exercise</p>
+                  <p className="mt-4 text-[13px] font-medium text-zinc-500">Add custom exercise</p>
                   <div className="mt-2 flex items-center gap-2">
                     <input
                       type="text"
@@ -579,21 +579,21 @@ function SchedulePage() {
                         }
                       }}
                       placeholder="e.g. Ring Push-Up"
-                      className="min-h-[40px] min-w-0 flex-1 rounded-lg bg-zinc-900/90 px-3 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                      className="min-h-[44px] min-w-0 flex-1 rounded-lg bg-zinc-900/90 px-3 py-2 text-base text-zinc-200 placeholder:text-zinc-600 focus:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
                     />
                     <Motion.button
                       type="button"
                       onClick={handleAddCustomExercise}
                       whileTap={{ scale: 0.96 }}
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                      className="inline-flex min-h-[40px] shrink-0 items-center gap-1 rounded-lg bg-white/10 px-3 py-2 text-xs font-semibold text-zinc-200 transition-colors duration-150 hover:bg-white/15"
+                      className="inline-flex min-h-[44px] shrink-0 items-center gap-1 rounded-lg bg-white/10 px-3.5 py-2 text-[14px] font-semibold text-zinc-200 transition-colors duration-150 hover:bg-white/15"
                     >
                       <Plus size={14} weight="bold" className="text-[var(--color-primary)]" />
                       Add
                     </Motion.button>
                   </div>
 
-                  <p className="mt-5 text-[11px] font-medium text-zinc-500">Current session</p>
+                  <p className="mt-5 text-[13px] font-medium text-zinc-500">Current session</p>
                   <ul className="mt-2 space-y-2">
                     {exerciseItems.map((exercise) => (
                       <Motion.li
@@ -606,7 +606,7 @@ function SchedulePage() {
                         <div className="flex items-start justify-between gap-3">
                           <p className="min-w-0 truncate text-sm font-semibold text-zinc-100">{exercise.name}</p>
                           <div className="flex items-center gap-2">
-                            <p className="text-[11px] font-medium text-zinc-400">PR {exercise.prDisplay}</p>
+                            <p className="text-[13px] font-medium text-zinc-400">PR {exercise.prDisplay}</p>
                             <Motion.button
                               type="button"
                               onClick={() => removeExercise(exercise.templateId)}
@@ -622,7 +622,7 @@ function SchedulePage() {
                           <span className="sr-only">Sets and reps</span>
                           <div className="grid grid-cols-2 gap-2">
                             <label className="block">
-                              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                              <span className="mb-1 block text-[12px] font-semibold uppercase tracking-wide text-zinc-500">
                                 Sets
                               </span>
                               <input
@@ -656,12 +656,12 @@ function SchedulePage() {
                                     updateTemplateSetsReps(exercise.templateId, normalized)
                                   }
                                 }}
-                                className="w-full rounded-lg bg-zinc-950/80 px-2 py-1.5 text-xs font-medium text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                                className="w-full rounded-lg bg-zinc-950/80 px-2.5 py-2 text-base font-medium text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
                                 placeholder="3"
                               />
                             </label>
                             <label className="block">
-                              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                              <span className="mb-1 block text-[12px] font-semibold uppercase tracking-wide text-zinc-500">
                                 Reps
                               </span>
                               <input
@@ -695,7 +695,7 @@ function SchedulePage() {
                                     updateTemplateSetsReps(exercise.templateId, normalized)
                                   }
                                 }}
-                                className="w-full rounded-lg bg-zinc-950/80 px-2 py-1.5 text-xs font-medium text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
+                                className="w-full rounded-lg bg-zinc-950/80 px-2.5 py-2 text-base font-medium text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45"
                                 placeholder="10"
                               />
                             </label>

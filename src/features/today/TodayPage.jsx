@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { motion as Motion, useReducedMotion } from 'framer-motion'
-import { ArrowCounterClockwise, Check, Pause, Play, Timer } from '@phosphor-icons/react'
-import { getWorkoutForDate } from '../schedule/workoutSchedule'
+import { ArrowCounterClockwise, Check, Fire, Pause, Play, Timer } from '@phosphor-icons/react'
+import { getWorkoutForDate, toISODateLocal } from '../schedule/workoutSchedule'
 import { useAppStore } from '../../state/useAppStore'
 import {
   WORKOUT_PROGRAM_UPDATED,
@@ -31,6 +31,9 @@ function TodayPage() {
 
   const selectedDomain = useAppStore((s) => s.selectedDomain)
   const missedWorkoutDates = useAppStore((s) => s.missedWorkoutDates)
+  const streak = useAppStore((s) => s.streak)
+  const quickTimerDefaultSeconds = useAppStore((s) => s.profile.quickTimerSeconds || 150)
+  const setStreakState = useAppStore((s) => s.setStreakState)
   const setSelectedNavTab = useAppStore((s) => s.setSelectedNavTab)
 
   const todayStart = useMemo(() => {
@@ -47,7 +50,7 @@ function TodayPage() {
   const [prSavingByExercise, setPrSavingByExercise] = useState({})
   const [showMiniTimer, setShowMiniTimer] = useState(false)
   const [miniTimerRunning, setMiniTimerRunning] = useState(false)
-  const [miniTimerSeconds, setMiniTimerSeconds] = useState(150)
+  const [miniTimerSeconds, setMiniTimerSeconds] = useState(quickTimerDefaultSeconds)
 
   const loadTodayWorkout = useCallback(async () => {
     if (!workoutId) {
@@ -91,15 +94,25 @@ function TodayPage() {
   }, [loadTodayWorkout])
 
   const handleToggleDone = async (exerciseId, next) => {
-    setRows((prev) =>
-      prev.map((r) => (r.exerciseId === exerciseId ? { ...r, done: next } : r))
-    )
+    const isoToday = toISODateLocal(todayStart)
+    const prevRows = rows
+    const nextRows = prevRows.map((r) => (r.exerciseId === exerciseId ? { ...r, done: next } : r))
+
+    setRows(nextRows)
     try {
       await setExerciseDoneForDate(todayStart, exerciseId, next)
+
+      const allDoneNow = nextRows.length > 0 && nextRows.every((r) => r.done)
+      if (allDoneNow && streak.lastCompletedDate !== isoToday) {
+        const nextCurrent = streak.current + 1
+        setStreakState({
+          current: nextCurrent,
+          longest: Math.max(streak.longest, nextCurrent),
+          lastCompletedDate: isoToday,
+        })
+      }
     } catch {
-      setRows((prev) =>
-        prev.map((r) => (r.exerciseId === exerciseId ? { ...r, done: !next } : r))
-      )
+      setRows(prevRows)
     }
   }
 
@@ -132,6 +145,12 @@ function TodayPage() {
     return () => window.clearInterval(interval)
   }, [miniTimerRunning, showMiniTimer])
 
+  useEffect(() => {
+    if (!miniTimerRunning) {
+      setMiniTimerSeconds(quickTimerDefaultSeconds)
+    }
+  }, [quickTimerDefaultSeconds, miniTimerRunning])
+
   const miniMinutes = Math.floor(miniTimerSeconds / 60)
   const miniSeconds = miniTimerSeconds % 60
 
@@ -154,7 +173,30 @@ function TodayPage() {
           <Timer size={18} weight="bold" />
         </Motion.button>
       </div>
-      <p className="mt-0.5 text-xs font-semibold text-zinc-500">{dateLabel}</p>
+      <p className="mt-0.5 text-[14px] font-semibold text-zinc-500">{dateLabel}</p>
+      <Motion.div
+        className="mt-3 rounded-2xl bg-white/[0.04] p-3 ring-1 ring-white/8"
+        initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={reduceMotion ? { duration: 0.01 } : { duration: 0.18, ease: [0.25, 0.1, 0.25, 1] }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800/90 text-[var(--color-primary)]">
+            <Fire size={16} weight="fill" />
+          </span>
+          <p className="text-[15px] font-semibold text-zinc-100">Streaks</p>
+        </div>
+        <div className="mt-3 flex items-center gap-3">
+          <div className="flex-1 rounded-xl bg-zinc-900/80 px-3 py-2">
+            <p className="text-[12px] font-medium uppercase tracking-wide text-zinc-500">Current</p>
+            <p className="mt-1 text-[20px] font-semibold tabular-nums text-zinc-100">{streak.current}</p>
+          </div>
+          <div className="flex-1 rounded-xl bg-zinc-900/80 px-3 py-2">
+            <p className="text-[12px] font-medium uppercase tracking-wide text-zinc-500">Longest</p>
+            <p className="mt-1 text-[20px] font-semibold tabular-nums text-zinc-100">{streak.longest}</p>
+          </div>
+        </div>
+      </Motion.div>
       {showMiniTimer ? (
         <Motion.div
           initial={reduceMotion ? false : { opacity: 0, y: -6 }}
@@ -165,7 +207,7 @@ function TodayPage() {
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-500">Quick Timer</p>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.16em] text-zinc-500">Quick Timer</p>
               <p className="mt-1 text-2xl font-semibold tabular-nums text-zinc-100">
                 {String(miniMinutes).padStart(2, '0')}:{String(miniSeconds).padStart(2, '0')}
               </p>
@@ -173,11 +215,11 @@ function TodayPage() {
             <div className="flex items-center gap-2">
               <Motion.button
                 type="button"
-                onClick={() => setMiniTimerSeconds(150)}
+                onClick={() => setMiniTimerSeconds(quickTimerDefaultSeconds)}
                 whileTap={reduceMotion ? undefined : { scale: 0.96 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 aria-label="Reset mini timer"
-                className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg bg-zinc-900 text-zinc-200 ring-1 ring-white/10"
+                className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-zinc-900 text-zinc-200 ring-1 ring-white/10"
               >
                 <ArrowCounterClockwise size={16} weight="bold" />
               </Motion.button>
@@ -185,14 +227,14 @@ function TodayPage() {
                 type="button"
                 onClick={() => {
                   if (!miniTimerRunning && miniTimerSeconds === 0) {
-                    setMiniTimerSeconds(150)
+                    setMiniTimerSeconds(quickTimerDefaultSeconds)
                   }
                   setMiniTimerRunning((current) => !current)
                 }}
                 whileTap={reduceMotion ? undefined : { scale: 0.96 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                 aria-label={miniTimerRunning ? 'Pause mini timer' : 'Start mini timer'}
-                className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg bg-[var(--color-primary)]/90 text-zinc-950 ring-1 ring-[var(--color-primary)]/45"
+                className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg bg-[var(--color-primary)]/90 text-zinc-950 ring-1 ring-[var(--color-primary)]/45"
               >
                 {miniTimerRunning ? <Pause size={16} weight="bold" /> : <Play size={16} weight="fill" />}
               </Motion.button>
@@ -213,7 +255,7 @@ function TodayPage() {
           ) : dayPlan.kind === 'missed' ? (
             <>
               <p className="mt-2 text-lg font-semibold text-zinc-200">Missed</p>
-              <p className="mt-1 text-xs font-medium text-zinc-500">
+              <p className="mt-1 text-[14px] font-medium text-zinc-500">
                 Session moved — check Schedule for your updated week.
               </p>
             </>
@@ -222,9 +264,9 @@ function TodayPage() {
               <p className="mt-2 text-lg font-semibold text-zinc-100">{dayPlan.label}</p>
 
               {todayLoading ? (
-                <p className="mt-4 text-xs font-medium text-zinc-500">Loading workout…</p>
+                <p className="mt-4 text-[14px] font-medium text-zinc-500">Loading workout…</p>
               ) : rows.length === 0 ? (
-                <p className="mt-4 text-xs font-medium text-zinc-500">
+                <p className="mt-4 text-[14px] font-medium text-zinc-500">
                   No exercises in this template yet — add them in Schedule.
                 </p>
               ) : (
@@ -268,9 +310,9 @@ function TodayPage() {
                         </label>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-zinc-100">{row.name}</p>
-                          <p className="mt-0.5 text-xs font-medium text-zinc-500">{row.setsReps}</p>
+                          <p className="mt-0.5 text-[14px] font-medium text-zinc-500">{row.setsReps}</p>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
-                            <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500">
+                            <span className="text-[12px] font-semibold uppercase tracking-wide text-zinc-500">
                               PR
                             </span>
                             <input
@@ -285,7 +327,7 @@ function TodayPage() {
                                 }))
                               }
                               placeholder="e.g. 32.5 kg"
-                              className={`min-h-[40px] min-w-0 flex-1 rounded-lg px-2.5 py-2 text-xs font-medium placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45 ${
+                              className={`min-h-[44px] min-w-0 flex-1 rounded-lg px-3 py-2 text-base font-medium placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]/45 ${
                                 row.done
                                   ? 'bg-zinc-900/90 text-zinc-200'
                                   : 'cursor-not-allowed bg-zinc-900/40 text-zinc-500'
@@ -305,7 +347,7 @@ function TodayPage() {
                                   ? undefined
                                   : { scale: 0.97 }
                               }
-                              className={`min-h-[40px] rounded-lg px-3 text-[11px] font-semibold transition-colors duration-150 ${
+                              className={`min-h-[44px] rounded-lg px-3.5 text-[14px] font-semibold transition-colors duration-150 ${
                                 !row.done ||
                                 prSavingByExercise[row.exerciseId] ||
                                 (prDrafts[row.exerciseId] ?? '').trim() ===
@@ -330,7 +372,7 @@ function TodayPage() {
             onClick={() => setSelectedNavTab('schedule')}
             whileTap={reduceMotion ? undefined : { scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-            className="mt-4 w-full rounded-xl bg-white/5 py-2.5 text-xs font-semibold text-zinc-200 transition-colors duration-150 hover:bg-white/10"
+            className="mt-4 w-full rounded-xl bg-white/5 py-3 text-[15px] font-semibold text-zinc-200 transition-colors duration-150 hover:bg-white/10"
           >
             Open schedule
           </Motion.button>

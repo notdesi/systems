@@ -104,7 +104,7 @@ function App() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2, ease: 'easeOut' }}
     >
-      <div className="mx-auto flex min-h-svh w-full max-w-md flex-col px-5 pb-28 pt-5">
+      <div className="mx-auto flex min-h-svh w-full max-w-md flex-col px-5 pb-32 pt-[max(env(safe-area-inset-top),1rem)]">
         <header className="flex items-center justify-start">
           <DomainSelector selectedDomain={selectedDomain} onSelect={setSelectedDomain} />
           <AuthPage.SignedInBadge email={session?.user?.email ?? 'Logged in'} onLogout={handleLogout} />
@@ -154,11 +154,11 @@ function App() {
               transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
             >
               <div className="rounded-3xl bg-white/[0.06] px-6 py-7 text-center">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Current Domain</p>
+                <p className="text-[13px] uppercase tracking-[0.18em] text-zinc-500">Current Domain</p>
                 <h1 className="mt-3 text-2xl font-semibold text-zinc-100">
                   {selectedDomain.charAt(0).toUpperCase() + selectedDomain.slice(1)}
                 </h1>
-                <p className="mt-2 text-xs text-zinc-400">App content will be based on this selection.</p>
+                <p className="mt-2 text-[14px] text-zinc-400">App content will be based on this selection.</p>
               </div>
             </Motion.section>
           )}

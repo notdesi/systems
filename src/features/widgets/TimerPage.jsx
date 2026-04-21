@@ -98,7 +98,7 @@ function UnitPicker({ label, value, onChange, min, max, disabled }) {
 
   return (
     <div className="flex flex-1 flex-col items-center gap-2 rounded-2xl bg-white/[0.04] px-3 py-3 ring-1 ring-white/8">
-      <p className="text-[10px] uppercase tracking-[0.18em] text-zinc-500">{label}</p>
+      <p className="text-[12px] uppercase tracking-[0.16em] text-zinc-500">{label}</p>
       <div
         className="relative w-full overflow-hidden rounded-xl bg-zinc-900 ring-1 ring-white/10"
         style={{ height: `${viewportHeight}px` }}
@@ -190,7 +190,7 @@ function TimerPage({ onBack }) {
           onClick={onBack}
           whileTap={{ scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 500, damping: 32 }}
-          className="inline-flex min-h-[38px] min-w-[38px] items-center justify-center rounded-full bg-zinc-900 ring-1 ring-white/10"
+          className="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full bg-zinc-900 ring-1 ring-white/10"
           aria-label="Back to widgets"
         >
           <ArrowLeft size={18} weight="bold" className="text-zinc-100" />

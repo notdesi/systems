@@ -42,13 +42,13 @@ function DomainSelector({ selectedDomain, onSelect }) {
         type="button"
         whileTap={{ scale: 0.97 }}
         transition={{ type: 'spring', stiffness: 520, damping: 34 }}
-        className="flex items-center gap-1.5 rounded-full bg-white/[0.08] px-3 py-1.5 text-xs font-medium text-zinc-100 backdrop-blur transition-colors duration-150 hover:bg-white/[0.12]"
+        className="flex min-h-[44px] items-center gap-2 rounded-full bg-white/[0.08] px-3.5 py-2 text-[14px] font-medium text-zinc-100 backdrop-blur transition-colors duration-150 hover:bg-white/[0.12]"
         onClick={() => setIsOpen((open) => !open)}
       >
-        <selectedOption.icon size={14} weight="duotone" className="text-[var(--color-primary)]" />
+        <selectedOption.icon size={16} weight="duotone" className="text-[var(--color-primary)]" />
         <span>{selectedOption.label}</span>
         <CaretDown
-          size={12}
+          size={14}
           weight="bold"
           className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
@@ -68,7 +68,7 @@ function DomainSelector({ selectedDomain, onSelect }) {
                 <button
                   key={option.id}
                   type="button"
-                  className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm text-zinc-100 transition-colors hover:bg-white/8"
+                  className="flex min-h-[44px] w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-[15px] text-zinc-100 transition-colors hover:bg-white/8"
                   onClick={() => {
                     onSelect(option.id)
                     setIsOpen(false)

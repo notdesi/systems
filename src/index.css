@@ -20,6 +20,10 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --text-caption: 0.8125rem; /* 13px */
+  --text-footnote: 0.875rem; /* 14px */
+  --text-body: 1rem; /* 16px */
+  --tap-target-min: 44px;
 }
 
 *,
@@ -34,4 +38,19 @@ body,
   margin: 0;
   min-height: 100%;
   width: 100%;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+button,
+[role="button"] {
+  min-height: var(--tap-target-min);
+}
+
+input,
+select,
+textarea {
+  font-size: var(--text-body);
 }
