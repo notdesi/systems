@@ -46,7 +46,7 @@ function UnitPicker({ label, value, onChange, min, max, disabled }) {
     const scroller = scrollRef.current
     if (!scroller) return
     scroller.scrollTop = (value - min) * ITEM_HEIGHT
-  }, [ITEM_HEIGHT, min])
+  }, [ITEM_HEIGHT, min, value])
 
   const snapToClosest = () => {
     const scroller = scrollRef.current

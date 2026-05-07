@@ -237,13 +237,6 @@ function SignedInBadge({ email, onLogout }) {
   }, [isSettingsOpen])
 
   useEffect(() => {
-    if (isSettingsOpen) {
-      setDraft(profile)
-      setSettingsView('main')
-    }
-  }, [isSettingsOpen, profile])
-
-  useEffect(() => {
     if (!isOpen) return undefined
     const handleOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -289,6 +282,8 @@ function SignedInBadge({ email, onLogout }) {
             role="menuitem"
             onClick={() => {
               setIsOpen(false)
+              setDraft(profile)
+              setSettingsView('main')
               setIsSettingsOpen(true)
             }}
             whileTap={{ scale: 0.98 }}
